@@ -24,11 +24,11 @@
     }],
     "background": {
         "service_worker": "service-worker.js"
-    },
-    "web_accessible_resources": [
-        {
-            "resources": [ "images/clipboard.png" ],
-            "matches": [ "<all_urls>" ]
-          }
-    ]
+    }
+    // "web_accessible_resources": [
+    //     {
+    //         "resources": [ "images/clipboard.png" ],
+    //         "matches": [ "<all_urls>" ]
+    //       }
+    // ]
 }

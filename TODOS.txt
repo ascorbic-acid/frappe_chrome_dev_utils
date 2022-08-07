@@ -1,3 +1,0 @@
-
-- use frappe refresh to check page load
-- fix pageLoad, prepare fields should work on customize form only

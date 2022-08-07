@@ -55,7 +55,6 @@ function pageLoaded(tabId) {
                         }
                     } else {
                         field.df.label += "  (HIDDEN)";
-                        console.log(field);
                         field.wrapper.style.color = "brown";
                         if(control_label) {
                             control_label.style.color = "brown";
@@ -96,8 +95,6 @@ function pageLoaded(tabId) {
                         options: field.options
                     })
                 }
-
-                console.log(dialog_fields);
     
                 let d = new frappe.ui.Dialog({
                     title: `IDF: Bulk Edit for ${checked.length} Rows.`,
@@ -151,13 +148,13 @@ function showOptionsDialog(args) {
             options: ` <div style="display: grid; grid-template-columns: repeat(3, 1fr)">
                         <!-- first row -->
                         <div>
-                            <p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.fieldname}')" style="cursor: pointer;">Name: <strong>${fieldData.df.fieldname} </strong> <img src="${args.clipboardImage}" style="width: 18px; margin: -7px 7px -2px 4px;" /></p>
+                            <p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.fieldname}')" style="cursor: pointer;">Name: <strong>${fieldData.df.fieldname} </strong> </p>
                         </div>
                         <div>
                             <p ">Type: <strong>${fieldData.df.fieldtype} </strong></p>
                         </div>
                         <div>
-                            <p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.options}')" style="cursor: pointer;">Options: <strong>${fieldData.df.options} </strong> <img src="${args.clipboardImage}" style="width: 18px; margin: -7px 7px -2px 4px;"/><p>
+                            <p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.options}')" style="cursor: pointer;">Options: <strong>${fieldData.df.options} </strong> <p>
                         </div>
                         
                         <!-- second row -->
@@ -310,8 +307,6 @@ async function insertChildtableData(fieldname, tabId) {
 
 // Customization
 async function saveCustomizedFields(payload) {
-    console.log(payload)
-
     await chrome.storage.local.set({
         "storage__customized_fields_data": payload
     });
@@ -355,18 +350,14 @@ async function insertCustomizedFields(tabId) {
 // listen for content script messages
 chrome.runtime.onMessage.addListener(async(event,sender,sendResponse)=>{
     const tabId = sender.tab.id;
-    console.log("BG: ", event.eventName);
+    // console.log("BG: ", event.eventName);
     switch (event.eventName) {
     case "bg_request__page_loaded":
         pageLoaded(tabId);
         break;
 
     case "bg_request__show_field_options_dialog":
-        let clipboardImage = chrome.runtime.getURL("images/clipboard.png");
-        exec(showOptionsDialog, {
-            fieldname: event.payload,
-            clipboardImage
-        }, tabId);
+        exec(showOptionsDialog, {fieldname: event.payload}, tabId);
         break;
 
     case "bg_request__childtable_save":

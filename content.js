@@ -65,7 +65,7 @@ async function backgroundMessage(eventName, payload) {
 window.addEventListener("message", async (evt) => {
     if (evt.origin === window.origin) {
         // message.origin = window.location.origin
-        console.log("CS: ", evt.data.eventName);
+        // console.log("CS: ", evt.data.eventName);
         switch(evt.data.eventName) {
             case "cs_request__childtable_save":
                 backgroundMessage('bg_request__childtable_save', evt.data.payload);
