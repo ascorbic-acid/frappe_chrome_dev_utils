@@ -46,12 +46,20 @@ function pageLoaded(tabId) {
                     field.df.old_hidden = 1;
                     field.df.hidden = 0;
     
+                    let control_label = field.wrapper.querySelector(".control-label");
                     if (field.df.is_custom_field === 1) {
-                        // field.df.label += "  (HIDDEN | Custom Field)";
-                        field.wrapper.querySelector(".control-label").style.color = "darksalmon";
+                        field.df.label += "  (HIDDEN)";
+                        field.wrapper.style.color = "darksalmon";
+                        if(control_label) {
+                            control_label.style.color = "darksalmon";
+                        }
                     } else {
                         field.df.label += "  (HIDDEN)";
-                        field.wrapper.querySelector(".control-label").style.color = "brown";
+                        console.log(field);
+                        field.wrapper.style.color = "brown";
+                        if(control_label) {
+                            control_label.style.color = "brown";
+                        }
                     }
                 }
             }
