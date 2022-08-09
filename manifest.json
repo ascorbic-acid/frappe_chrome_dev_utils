@@ -4,7 +4,9 @@
     "description": "Extension that help you in Frappe Framework",
     "version": "1.0.5",
     "icons": {
-        "512": "logo/logo-512.png"
+        "16": "logo/logo.png",
+        "48": "logo/logo.png",
+        "128": "logo/logo.png"
     },
     "options_page": "settings/settings.html",
     "action": {
