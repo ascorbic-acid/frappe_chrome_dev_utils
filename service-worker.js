@@ -96,7 +96,7 @@ chrome.runtime.onMessage.addListener(async(event,sender,sendResponse)=>{
         pageLoaded(tabId);
         break;
 
-    case "bg_request__show_field_options_dialog":
+    case "bg_request__show_options_dialog":
         idfShowOptionsDialog({fieldname: event.payload}, tabId);
         break;
 

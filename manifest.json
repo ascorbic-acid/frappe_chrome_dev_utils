@@ -13,24 +13,14 @@
         "default_title": "IDF Frappe Utils",
         "default_popup": "popup/popup.html"
     },
-    "permissions": ["activeTab", "scripting", "background", "tabs", "storage", "webNavigation"],
+    "permissions": [ "activeTab", "scripting", "background", "tabs", "storage", "webNavigation" ],
     "host_permissions": [ "http://*/app/*", "https://*/app/*" ],
     "content_scripts": [{
-        "js": [ 
-            "libs/jquery2.2.4.min.js",
-            "libs/popper2.11.5.min.js",
-            "libs/tippy.js",
-            "content.js" ],
+        "js": [ "content.js" ],
         "matches": [ "http://*/app/*", "https://*/app/*" ],
         "run_at": "document_idle"
     }],
     "background": {
         "service_worker": "service-worker.js"
     }
-    // "web_accessible_resources": [
-    //     {
-    //         "resources": [ "images/clipboard.png" ],
-    //         "matches": [ "<all_urls>" ]
-    //       }
-    // ]
 }

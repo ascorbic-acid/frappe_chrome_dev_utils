@@ -14,6 +14,9 @@ function idfFormRefresh(tabId) {
                 let field = cur_frm.fields[i];
                 if(!field.wrapper.querySelector) continue;
                 
+                // init tooltip for each field
+                $(field.wrapper).tooltip({animation: true, title: field.df.fieldname + "  (Ctrl+X)"});
+
                 if (!field.df.is_custom_field) field.df.is_custom_field = "0";
                 if (!field.df.hidden) field.df.hidden = "0";
 
@@ -43,6 +46,15 @@ function idfFormRefresh(tabId) {
                 }
             }
             cur_frm.refresh_fields();
+
+            // register keyboard event Ctrl+X
+            $(document).keydown(function (e) {
+                if (e.ctrlKey && e.keyCode == 88) {
+                    let targetField = document.querySelectorAll("div.frappe-control[aria-describedby]");
+                    let fieldname = targetField[0].getAttribute("data-fieldname");
+                    postMessage({eventName: "cs_request__show_options_dialog", payload: fieldname});
+                };
+            });
         }
 
     }
@@ -71,13 +83,13 @@ function idfShowOptionsDialog(args, tabId) {
                 options: ` <div style="display: grid; grid-template-columns: auto auto">
 
                             <div><p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.fieldname}');cur_dialog.hide();" style="cursor: pointer;">Name: <strong>${fieldData.df.fieldname} </strong> </p></div>
-                            <div><p >Is Custom: <strong>${fieldData.df.is_custom_field} </strong> </p></div>
+                            <div><p>Is Custom: <strong>${fieldData.df.is_custom_field}</strong> </p></div>
 
-                            <div><p ">Type: <strong>${fieldData.df.fieldtype} </strong></p></div>
-                            <div><p >Hidden: <strong>${fieldData.df.hidden} </strong> </p></div>
+                            <div><p>Type: <strong>${fieldData.df.fieldtype}</strong></p></div>
+                            <div><p>Hidden: <strong>${fieldData.df.hidden}</strong> </p></div>
 
                             <div><p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.options}');cur_dialog.hide();" style="cursor: pointer;">Options: <strong>${fieldData.df.options} </strong> <p></div>
-                            <div><p >In ListView: <strong>${fieldData.df.in_list_view} </strong> </p></div>
+                            <div><p>In ListView: <strong>${fieldData.df.in_list_view}</strong> </p></div>
                         </div>
                     `
             }, {
