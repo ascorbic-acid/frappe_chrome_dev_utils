@@ -1,7 +1,6 @@
 importScripts('frappe/listview.js')
 importScripts('frappe/form.js')
 
-
 // called when frappe page is fully ready
 function pageLoaded(tabId) {
     // exec form scripts
@@ -9,6 +8,7 @@ function pageLoaded(tabId) {
 
     // exec listview scripts
     idfListviewRefresh(tabId);
+
 }
 
 // payload is cur_frm.doc['field']
@@ -87,38 +87,61 @@ async function insertCustomizedFields(tabId) {
     , args, tabId)
 }
 
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+    if (changeInfo.status == 'complete' && tab.active) {
+        // listen for future url changes
+        idfExec(()=>{
+            if (!window.idfConfig) {
+                window["idfConfig"] = {};
+                idfConfig.ctrl_x = false;
+                idfConfig.inited_routes = [];
+                frappe.router.on('change', ()=>{
+                    setTimeout(()=>{
+                        postMessage({
+                            eventName: "idf_cs_request__route_changed",
+                            payload: frappe.router.current_route
+                        })
+                    }
+                    , 1000);
+                }
+                );
+            }
+        }
+        , {}, tab.id);
+    }
+})
+
 // listen for content script messages
 chrome.runtime.onMessage.addListener(async(event,sender,sendResponse)=>{
     const tabId = sender.tab.id;
     // console.log("BG: ", event.eventName);
     switch (event.eventName) {
-    case "bg_request__page_loaded":
+    case "idf_bg_request__route_changed":
+        console.log("ROUTER CHANGE");
         pageLoaded(tabId);
         break;
-
-    case "bg_request__show_options_dialog":
-        idfShowOptionsDialog({fieldname: event.payload}, tabId);
+    case "idf_bg_request__page_loaded":
+        pageLoaded(tabId);
         break;
-
-    case "bg_request__childtable_save":
+    case "idf_bg_request__show_options_dialog":
+        idfShowOptionsDialog({
+            fieldname: event.payload
+        }, tabId);
+        break;
+    case "idf_bg_request__childtable_save":
         saveChildTableData(event.payload);
         break;
-
-    case "bg_request__childtable_insert":
+    case "idf_bg_request__childtable_insert":
         insertChildtableData(event.payload, tabId);
         break;
-
-    case "bg_request__customized_fields_save":
+    case "idf_bg_request__customized_fields_save":
         saveCustomizedFields(event.payload);
         break;
-
-    case "bg_request__customized_fields_insert":
+    case "idf_bg_request__customized_fields_insert":
         insertCustomizedFields(tabId);
         break;
-
     }
-}
-);
+});
 
 // execute functions in page
 async function idfExec(handler, args, tabId) {

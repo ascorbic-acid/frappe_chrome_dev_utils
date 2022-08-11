@@ -1,9 +1,20 @@
-function idfFormRefresh(tabId) {    
-    idfExec((args)=>{   
-        if(cur_frm) {
+function idfFormRefresh(tabId) {
+    idfExec((args)=>{
+        let[route_type,doctype,docname] = frappe.router.current_route;
+        let routeID = `${route_type}/${doctype}/${docname}`;
+
+        if (cur_frm) {
+            if (idfConfig.inited_routes.find(el=>el === routeID)) {
+                console.log('inited return');
+                return
+            }
+            console.log('not inited, init');
+
+            idfConfig.inited_routes.push(`${route_type}/${doctype}/${docname}`);
+
             // patch save button to force save if the form did not change
             var origina_save_func = frappe.ui.form.save
-        
+
             frappe.ui.form.save = function(frm, action, callback, btn) {
                 frm.dirty();
                 origina_save_func.apply(this, [frm, action, callback, btn]);
@@ -12,34 +23,40 @@ function idfFormRefresh(tabId) {
             // patch fields
             for (let i = 0; i < cur_frm.fields.length; i++) {
                 let field = cur_frm.fields[i];
-                if(!field.wrapper.querySelector) continue;
-                
+                if (!field.wrapper.querySelector)
+                    continue;
+
                 // init tooltip for each field
-                $(field.wrapper).tooltip({animation: true, title: field.df.fieldname + "  (Ctrl+X)"});
+                $(field.wrapper).tooltip({
+                    animation: true,
+                    title: field.df.fieldname + "  (Ctrl+X)"
+                });
 
-                if (!field.df.is_custom_field) field.df.is_custom_field = "0";
-                if (!field.df.hidden) field.df.hidden = "0";
+                if (!field.df.is_custom_field)
+                    field.df.is_custom_field = "0";
+                if (!field.df.hidden)
+                    field.df.hidden = "0";
 
+                if (location.pathname.includes("/app/customize-form"))
+                    field.df.old_hidden = field.df.hidden;
 
-                if (location.pathname.includes("/app/customize-form")) field.df.old_hidden = field.df.hidden;
-    
                 // show all hidden fields & highlight custom fields
                 if (field.df.hidden === 1) {
                     //save old hidden value
                     field.df.old_hidden = 1;
                     field.df.hidden = 0;
-    
+
                     let control_label = field.wrapper.querySelector(".control-label");
                     if (field.df.is_custom_field === 1) {
                         field.df.label += "  (HIDDEN)";
                         field.wrapper.style.color = "darksalmon";
-                        if(control_label) {
+                        if (control_label) {
                             control_label.style.color = "darksalmon";
                         }
                     } else {
                         field.df.label += "  (HIDDEN)";
                         field.wrapper.style.color = "brown";
-                        if(control_label) {
+                        if (control_label) {
                             control_label.style.color = "brown";
                         }
                     }
@@ -48,28 +65,34 @@ function idfFormRefresh(tabId) {
             cur_frm.refresh_fields();
 
             // register keyboard event Ctrl+X
-            $(document).keydown(function (e) {
-                if (e.ctrlKey && e.keyCode == 88) {
-                    let targetField = document.querySelectorAll("div.frappe-control[aria-describedby]");
-                    let fieldname = targetField[0].getAttribute("data-fieldname");
-                    postMessage({eventName: "cs_request__show_options_dialog", payload: fieldname});
-                };
-            });
+            if (!idfConfig.ctrl_x) {
+                idfConfig.ctrl_x = true;
+                $(document).keydown(function(e) {
+                    if (e.ctrlKey && e.keyCode == 88) {
+                        let targetField = document.querySelectorAll("div.frappe-control[aria-describedby]");
+                        let fieldname = targetField[0].getAttribute("data-fieldname");
+                        postMessage({
+                            eventName: "idf_cs_request__show_options_dialog",
+                            payload: fieldname
+                        });
+                    }
+                    ;
+                });
+            }
+
         }
 
     }
     , {}, tabId);
 }
 
-
-
-function idfShowOptionsDialog(args, tabId) {    
-    console.log("idfShowOptionsDialog: ", args);
-    idfExec((args)=>{   
+function idfShowOptionsDialog(args, tabId) {
+    idfExec((args)=>{
         const fieldData = cur_frm.get_field(args.fieldname);
         // prepare field info
-        if (!fieldData.df.options) fieldData.df.options = "";
-        
+        if (!fieldData.df.options)
+            fieldData.df.options = "";
+
         var dialog = new frappe.ui.Dialog({
             title: `IDF: Field Info`,
             fields: [{
@@ -105,10 +128,10 @@ function idfShowOptionsDialog(args, tabId) {
                 click: (val)=>{
                     if (fieldData.df.fieldtype == "Table") {
                         postMessage({
-                            eventName: "cs_request__childtable_save",
+                            eventName: "idf_cs_request__childtable_save",
                             payload: cur_frm.doc[fieldData.df.fieldname]
                         });
-    
+
                         frappe.show_alert(`IDF: Date of table: (${fieldData.df.fieldname}) saved to browser storage`, 8);
                         cur_dialog.hide();
                     } else {
@@ -124,10 +147,10 @@ function idfShowOptionsDialog(args, tabId) {
                 click: (val)=>{
                     if (fieldData.df.fieldtype == "Table") {
                         postMessage({
-                            eventName: "cs_request__childtable_insert",
+                            eventName: "idf_cs_request__childtable_insert",
                             payload: fieldData.df.fieldname
                         });
-    
+
                         frappe.show_alert(`IDF: Data of table: (${fieldData.df.fieldname}) has been inserted`, 8);
                         cur_dialog.hide();
                     } else {
@@ -146,19 +169,19 @@ function idfShowOptionsDialog(args, tabId) {
                         // get custom fields
                         let fields = cur_frm.doc.fields;
                         let customFields = [];
-    
+
                         for (let i = 0; i < fields.length; i++) {
                             if (fields[i].is_custom_field === 1) {
                                 fields[i].insert_after_fieldname = fields[i === 0 ? 0 : (i - 1)].fieldname;
                                 customFields.push(fields[i]);
                             }
                         }
-    
+
                         postMessage({
-                            eventName: "cs_request__customized_fields_save",
+                            eventName: "idf_cs_request__customized_fields_save",
                             payload: customFields
                         });
-    
+
                         frappe.show_alert(`IDF: Customized Fields saved to browser storage`, 8);
                         cur_dialog.hide();
                     } else {
@@ -174,9 +197,9 @@ function idfShowOptionsDialog(args, tabId) {
                 click: (val)=>{
                     if (fieldData.df.parent == "Customize Form" && fieldData.df.fieldname == "fields") {
                         postMessage({
-                            eventName: "cs_request__customized_fields_insert"
+                            eventName: "idf_cs_request__customized_fields_insert"
                         });
-    
+
                         frappe.show_alert(`IDF: Customized Fields has been inserted`, 8);
                         cur_dialog.hide();
                     } else {
@@ -191,7 +214,7 @@ function idfShowOptionsDialog(args, tabId) {
                 cur_dialog.hide();
             }
         });
-        dialog.show();    
+        dialog.show();
 
     }
     , args, tabId);

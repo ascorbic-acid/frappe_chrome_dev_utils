@@ -1,24 +1,19 @@
 {
     "manifest_version": 3,
     "name": "Frappe Development Utils",
-    "description": "Extension that help you in Frappe Framework",
+    "description": "Extension that help you in Frappe/ERPNext Framework",
     "version": "1.0.5",
     "icons": {
         "16": "logo/logo.png",
         "48": "logo/logo.png",
         "128": "logo/logo.png"
     },
-    "options_page": "settings/settings.html",
-    "action": {
-        "default_title": "IDF Frappe Utils",
-        "default_popup": "popup/popup.html"
-    },
-    "permissions": [ "activeTab", "scripting", "background", "tabs", "storage", "webNavigation" ],
+    "permissions": [ "scripting", "storage" ],
     "host_permissions": [ "http://*/app/*", "https://*/app/*" ],
     "content_scripts": [{
         "js": [ "content.js" ],
         "matches": [ "http://*/app/*", "https://*/app/*" ],
-        "run_at": "document_idle"
+        "run_at": "document_end"
     }],
     "background": {
         "service_worker": "service-worker.js"
