@@ -54,8 +54,6 @@ function idfFormRefresh(tabId) {
                     label.appendChild(opsDiv);
                 }
 
-                console.log(field.df.fieldname);
-                console.log(field);
 
                 if (!field.df.is_custom_field)
                     field.df.is_custom_field = "0";
@@ -113,10 +111,12 @@ function idfFormRefresh(tabId) {
 
 function idfShowOptionsDialog(args, tabId) {
     idfExec((args)=>{
-        const fieldData = cur_frm.get_field(args.fieldname);
+        let fieldData = cur_frm.get_field(args.fieldname);
+        console.log(fieldData);
         // prepare field info
         if (!fieldData.df.options)
             fieldData.df.options = "";
+        // rmeove newline chars
 
         var dialog = new frappe.ui.Dialog({
             title: `IDF: Field Info`,
@@ -136,7 +136,7 @@ function idfShowOptionsDialog(args, tabId) {
                             <div><p>Type: <strong>${fieldData.df.fieldtype}</strong></p></div>
                             <div><p>Hidden: <strong>${fieldData.df.hidden}</strong> </p></div>
 
-                            <div><p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.options}');cur_dialog.hide();" style="cursor: pointer;">Options: <strong>${fieldData.df.options} </strong> <p></div>
+                            <div><p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.options.replace(/\s/g, " ")}');cur_dialog.hide();" style="cursor: pointer;">Options: <strong>${fieldData.df.options} </strong> <p></div>
                             <div><p>In ListView: <strong>${fieldData.df.in_list_view}</strong> </p></div>
                         </div>
                     `
