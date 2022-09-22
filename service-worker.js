@@ -92,6 +92,15 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         // listen for future url changes
         idfExec(()=>{
             if (!window.idfConfig) {
+                var oFunc = frappe.ui.make_app_page
+
+                frappe.ui.make_app_page = function(opts) {
+                    oFunc.apply(this, [opts]);
+                    console.log(opts);
+                    // return oTrigger.apply(this, [event_name, doctype2, name]);
+                    
+                }
+
                 window["idfConfig"] = {};
                 idfConfig.ctrl_x = false;
                 idfConfig.inited_routes = [];

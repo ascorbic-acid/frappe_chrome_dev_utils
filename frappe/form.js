@@ -13,11 +13,10 @@ function idfFormRefresh(tabId) {
             idfConfig.inited_routes.push(`${route_type}/${doctype}/${docname}`);
 
             // patch save button to force save if the form did not change
-            var origina_save_func = frappe.ui.form.save
-
+            var origin_save_func = frappe.ui.form.save
             frappe.ui.form.save = function(frm, action, callback, btn) {
                 frm.dirty();
-                origina_save_func.apply(this, [frm, action, callback, btn]);
+                origin_save_func.apply(this, [frm, action, callback, btn]);
             }
 
             // patch fields
@@ -25,12 +24,38 @@ function idfFormRefresh(tabId) {
                 let field = cur_frm.fields[i];
                 if (!field.wrapper.querySelector)
                     continue;
+                
+                if(field.df.fieldname == "__newname")
+                    continue;
 
                 // init tooltip for each field
-                $(field.wrapper).tooltip({
-                    animation: true,
-                    title: field.df.fieldname + "  (Ctrl+X)"
+                // $(field.wrapper).tooltip({
+                //     animation: true,
+                //     title: field.df.fieldname + "  (Ctrl+X)"
+                // });
+                let opsDiv = document.createElement("div");
+                opsDiv.style.display = "inline-block"
+                opsDiv.style.cursor = "pointer";
+                opsDiv.innerHTML = `
+                    <svg class="icon icon-sm"><use href="#icon-tool"></use></svg>
+                `;
+                opsDiv.addEventListener("click", function(e) {
+                    postMessage({
+                        eventName: "idf_cs_request__show_options_dialog",
+                        payload: field.df.fieldname
+                    });
+                    e.stopPropagation();
                 });
+                if(field.wrapper.firstElementChild.classList.contains("checkbox")) {
+                    const label = field.wrapper.firstElementChild.querySelector("label")
+                    label.appendChild(opsDiv);
+                } else {
+                    const label = field.wrapper.firstElementChild.querySelector(".form-group > .clearfix")
+                    label.appendChild(opsDiv);
+                }
+
+                console.log(field.df.fieldname);
+                console.log(field);
 
                 if (!field.df.is_custom_field)
                     field.df.is_custom_field = "0";
@@ -65,20 +90,20 @@ function idfFormRefresh(tabId) {
             cur_frm.refresh_fields();
 
             // register keyboard event Ctrl+X
-            if (!idfConfig.ctrl_x) {
-                idfConfig.ctrl_x = true;
-                $(document).keydown(function(e) {
-                    if (e.ctrlKey && e.keyCode == 88) {
-                        let targetField = document.querySelectorAll("div.frappe-control[aria-describedby]");
-                        let fieldname = targetField[0].getAttribute("data-fieldname");
-                        postMessage({
-                            eventName: "idf_cs_request__show_options_dialog",
-                            payload: fieldname
-                        });
-                    }
-                    ;
-                });
-            }
+            // if (!idfConfig.ctrl_x) {
+            //     idfConfig.ctrl_x = true;
+            //     $(document).keydown(function(e) {
+            //         if (e.ctrlKey && e.keyCode == 88) {
+            //             let targetField = document.querySelectorAll("div.frappe-control[aria-describedby]");
+            //             let fieldname = targetField[0].getAttribute("data-fieldname");
+            //             postMessage({
+            //                 eventName: "idf_cs_request__show_options_dialog",
+            //                 payload: fieldname
+            //             });
+            //         }
+            //         ;
+            //     });
+            // }
 
         }
 
