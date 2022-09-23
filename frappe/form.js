@@ -1,23 +1,19 @@
 function idfFormRefresh(tabId) {
     idfExec((args)=>{
-        let[route_type,doctype,docname] = frappe.router.current_route;
-        let routeId = `${doctype}${docname}`;
-        console.log(frappe.router.current_route);
-        console.log(routeId);
+        // let[route_type,doctype,docname] = frappe.router.current_route;
+        // let routeId = `${doctype}${docname}`;
+
         if (cur_frm) {
             if(cur_frm["idf_inited"]) {
-                console.log("idf inited stop");
                 return;
             } else   {
                 cur_frm["idf_inited"] = true;
-                console.log("idf init for this doc");
             }
 
             // if (idfConfig.inited_routes.find(el=>el === routeId)) {
             //     console.log('inited return');
             //     return
             // }
-            // console.log('not inited, init');
 
             // idfConfig.inited_routes.push(routeId);
 
@@ -47,7 +43,7 @@ function idfFormRefresh(tabId) {
                 opsDiv.style.cursor = "pointer";
                 opsDiv.style.marginRight = "10px";
                 opsDiv.style.marginLeft = "10px";
-                
+
                 opsDiv.innerHTML = `
                     <svg class="icon icon-sm"><use href="#icon-tool"></use></svg>
                 `;
@@ -132,7 +128,6 @@ function idfFormRefresh(tabId) {
 function idfShowOptionsDialog(args, tabId) {
     idfExec((args)=>{
         let fieldData = cur_frm.get_field(args.fieldname);
-        console.log(fieldData);
         // prepare field info
         if (!fieldData.df.options)
             fieldData.df.options = "";
@@ -175,7 +170,6 @@ function idfShowOptionsDialog(args, tabId) {
                     if (fieldData.df.fieldtype == "Table") {
                         let table;
                         if(dialog.get_value("only_selected_rows")) {
-                            console.log(fieldData)
                             // const grid = cur_frm.get_field(fieldData.df.fieldname); 
                             table = fieldData.grid.get_selected_children()
                         } else {

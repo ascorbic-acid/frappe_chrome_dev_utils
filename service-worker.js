@@ -110,7 +110,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
                             eventName: "idf_cs_request__route_changed",
                             payload: frappe.router.current_route
                         })
-                        console.log(frappe.router)
                     }
                     , 1000);
                 }
@@ -127,7 +126,6 @@ chrome.runtime.onMessage.addListener(async(event,sender,sendResponse)=>{
     // console.log("BG: ", event.eventName);
     switch (event.eventName) {
     case "idf_bg_request__route_changed":
-        console.log("ROUTER CHANGE");
         pageLoaded(tabId);
         break;
     case "idf_bg_request__page_loaded":
