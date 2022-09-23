@@ -45,6 +45,9 @@ function idfFormRefresh(tabId) {
                 let opsDiv = document.createElement("div");
                 opsDiv.style.display = "inline-block"
                 opsDiv.style.cursor = "pointer";
+                opsDiv.style.marginRight = "10px";
+                opsDiv.style.marginLeft = "10px";
+                
                 opsDiv.innerHTML = `
                     <svg class="icon icon-sm"><use href="#icon-tool"></use></svg>
                 `;
@@ -54,18 +57,19 @@ function idfFormRefresh(tabId) {
                         payload: field.df.fieldname
                     });
                 });
-                //console.log(field.wrapper)
-                console.log("appended to", field.df.fieldname)
-                // console.log(field.wrapper, field.wrapper.firstElementChild)
+
                 if(field.wrapper.firstElementChild) {
+                    // checkbox fields
                     if(field.wrapper.firstElementChild.classList.contains("checkbox")) {
                         const label = field.wrapper.firstElementChild.querySelector("label")
                         label.appendChild(opsDiv);
+                        // standard fields
                     } else if(field.wrapper.firstElementChild.classList.contains("form-group")) {
                         const label = field.wrapper.firstElementChild.querySelector(".form-group > .clearfix")
                         label.appendChild(opsDiv);
+                        // table fields
                     } else if(field.wrapper.firstElementChild.classList.contains("control-label")) {
-                        const label = field.wrapper.firstElementChild
+                        const label = field.wrapper.firstElementChild;
                         label.appendChild(opsDiv);
                     }
                 }
