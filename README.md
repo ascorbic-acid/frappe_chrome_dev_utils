@@ -1,7 +1,7 @@
 
 ## Get Started
- Download this repo and load it to your browser in developer mode or Install it directly from the [Chrome Web Store](https://chrome.google.com/webstore/detail/frappe-development-utils/mfpfeokebfgddkaemagjigbjkmohmpab)
- Then open any doctype and click the options icon near the field label to open the options dialog.
+ Install the extention from the [Chrome Web Store](https://chrome.google.com/webstore/detail/frappe-development-utils/mfpfeokebfgddkaemagjigbjkmohmpab) 
+ or download this repo and load it to your browser in developer mode Then open any doctype and click the options icon near the field label to open the options dialog.
  
 
 ![Alt text](https://iili.io/sBSpwB.md.jpg "Preview")
