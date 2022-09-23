@@ -91,30 +91,31 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     if (changeInfo.status == 'complete' && tab.active) {
         // listen for future url changes
         idfExec(()=>{
-            if (!window.idfConfig) {
-                var oFunc = frappe.ui.make_app_page
+            // if (!window.idfConfig) {
+                // var oFunc = frappe.ui.make_app_page
 
-                frappe.ui.make_app_page = function(opts) {
-                    oFunc.apply(this, [opts]);
-                    console.log(opts);
-                    // return oTrigger.apply(this, [event_name, doctype2, name]);
+                // frappe.ui.make_app_page = function(opts) {
+                //     oFunc.apply(this, [opts]);
+                //     console.log(opts);
+                //     // return oTrigger.apply(this, [event_name, doctype2, name]);
                     
-                }
+                // }
 
-                window["idfConfig"] = {};
-                idfConfig.ctrl_x = false;
-                idfConfig.inited_routes = [];
+                // window["idfConfig"] = {};
+                // idfConfig.ctrl_x = false;
+                // idfConfig.inited_routes = [];
                 frappe.router.on('change', ()=>{
                     setTimeout(()=>{
                         postMessage({
                             eventName: "idf_cs_request__route_changed",
                             payload: frappe.router.current_route
                         })
+                        console.log(frappe.router)
                     }
                     , 1000);
                 }
                 );
-            }
+            // }
         }
         , {}, tab.id);
     }

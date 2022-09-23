@@ -1,16 +1,25 @@
 function idfFormRefresh(tabId) {
     idfExec((args)=>{
         let[route_type,doctype,docname] = frappe.router.current_route;
-        let routeID = `${route_type}/${doctype}/${docname}`;
-
+        let routeId = `${doctype}${docname}`;
+        console.log(frappe.router.current_route);
+        console.log(routeId);
         if (cur_frm) {
-            if (idfConfig.inited_routes.find(el=>el === routeID)) {
-                console.log('inited return');
-                return
+            if(cur_frm["idf_inited"]) {
+                console.log("idf inited stop");
+                return;
+            } else   {
+                cur_frm["idf_inited"] = true;
+                console.log("idf init for this doc");
             }
-            console.log('not inited, init');
 
-            idfConfig.inited_routes.push(`${route_type}/${doctype}/${docname}`);
+            // if (idfConfig.inited_routes.find(el=>el === routeId)) {
+            //     console.log('inited return');
+            //     return
+            // }
+            // console.log('not inited, init');
+
+            // idfConfig.inited_routes.push(routeId);
 
             // patch save button to force save if the form did not change
             var origin_save_func = frappe.ui.form.save
@@ -44,14 +53,21 @@ function idfFormRefresh(tabId) {
                         eventName: "idf_cs_request__show_options_dialog",
                         payload: field.df.fieldname
                     });
-                    e.stopPropagation();
                 });
-                if(field.wrapper.firstElementChild.classList.contains("checkbox")) {
-                    const label = field.wrapper.firstElementChild.querySelector("label")
-                    label.appendChild(opsDiv);
-                } else {
-                    const label = field.wrapper.firstElementChild.querySelector(".form-group > .clearfix")
-                    label.appendChild(opsDiv);
+                //console.log(field.wrapper)
+                console.log("appended to", field.df.fieldname)
+                // console.log(field.wrapper, field.wrapper.firstElementChild)
+                if(field.wrapper.firstElementChild) {
+                    if(field.wrapper.firstElementChild.classList.contains("checkbox")) {
+                        const label = field.wrapper.firstElementChild.querySelector("label")
+                        label.appendChild(opsDiv);
+                    } else if(field.wrapper.firstElementChild.classList.contains("form-group")) {
+                        const label = field.wrapper.firstElementChild.querySelector(".form-group > .clearfix")
+                        label.appendChild(opsDiv);
+                    } else if(field.wrapper.firstElementChild.classList.contains("control-label")) {
+                        const label = field.wrapper.firstElementChild
+                        label.appendChild(opsDiv);
+                    }
                 }
 
 
@@ -86,7 +102,7 @@ function idfFormRefresh(tabId) {
                 }
             }
             cur_frm.refresh_fields();
-
+            
             // register keyboard event Ctrl+X
             // if (!idfConfig.ctrl_x) {
             //     idfConfig.ctrl_x = true;
@@ -146,15 +162,24 @@ function idfShowOptionsDialog(args, tabId) {
                 label: "Extra Actions:",
                 fieldname: "field_options_section",
                 fieldtype: "Section Break"
-            }, {
+            },
+            {
                 label: 'Copy Table Data',
                 fieldname: 'copy_table_data',
                 fieldtype: 'Button',
                 click: (val)=>{
                     if (fieldData.df.fieldtype == "Table") {
+                        let table;
+                        if(dialog.get_value("only_selected_rows")) {
+                            console.log(fieldData)
+                            // const grid = cur_frm.get_field(fieldData.df.fieldname); 
+                            table = fieldData.grid.get_selected_children()
+                        } else {
+                            table = cur_frm.doc[fieldData.df.fieldname];
+                        }
                         postMessage({
                             eventName: "idf_cs_request__childtable_save",
-                            payload: cur_frm.doc[fieldData.df.fieldname]
+                            payload: table
                         });
 
                         frappe.show_alert(`IDF: Date of table: (${fieldData.df.fieldname}) saved to browser storage`, 8);
@@ -163,7 +188,14 @@ function idfShowOptionsDialog(args, tabId) {
                         frappe.show_alert(`IDF: Field: (${fieldData.df.fieldname}) is not a table`, 8);
                     }
                 }
-            }, {
+            },
+            {
+                label: 'Only Selected Rows',
+                fieldname: 'only_selected_rows',
+                fieldtype: 'Check',
+                description: 'if not checked copy all rows'
+            }
+            ,{
                 fieldtype: "Column Break"
             }, {
                 label: 'Insert Saved Table Data',
