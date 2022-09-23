@@ -8,6 +8,7 @@
 
 ## Features
 
+- Force forms save when clicking (Save) button even if nothing changed
 - Highlight the hidden and custom fields in any DocType
 - Show & change hidden fields in any DocType
 - Show fields details including field name, type, options, etc

@@ -111,7 +111,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
                             payload: frappe.router.current_route
                         })
                     }
-                    , 1000);
+                    , 500);
                 }
                 );
             // }
