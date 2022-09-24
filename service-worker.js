@@ -104,16 +104,18 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
                 // window["idfConfig"] = {};
                 // idfConfig.ctrl_x = false;
                 // idfConfig.inited_routes = [];
-                frappe.router.on('change', ()=>{
-                    setTimeout(()=>{
-                        postMessage({
-                            eventName: "idf_cs_request__route_changed",
-                            payload: frappe.router.current_route
-                        })
+                if(frappe.router) {
+                    frappe.router.on('change', ()=>{
+                        setTimeout(()=>{
+                            postMessage({
+                                eventName: "idf_cs_request__route_changed",
+                                payload: frappe.router.current_route
+                            })
+                        }
+                        , 500);
                     }
-                    , 500);
+                    );
                 }
-                );
             // }
         }
         , {}, tab.id);

@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Frappe/ERPNext Tools",
     "description": "Simple Extension that help you work with Frappe/ERPNext Framework",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "icons": {
         "16": "logo/logo.png",
         "48": "logo/logo.png",

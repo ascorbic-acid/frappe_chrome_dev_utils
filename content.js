@@ -20,7 +20,7 @@ window.addEventListener("message", async (evt) => {
     if (evt.origin === window.origin) {
         // message.origin = window.location.origin
         // console.log("CS: ", evt.data.eventName);
-        switch(evt.data.eventName) {
+        switch (evt.data.eventName) {
             case "idf_cs_request__route_changed":
                 backgroundMessage("idf_bg_request__route_changed", evt.data.payload);
                 break;
@@ -34,8 +34,8 @@ window.addEventListener("message", async (evt) => {
             case "idf_cs_request__childtable_insert":
                 backgroundMessage('idf_bg_request__childtable_insert', evt.data.payload);
                 break;
-            
-            case "idf_cs_request__customized_fields_save": 
+
+            case "idf_cs_request__customized_fields_save":
                 backgroundMessage('idf_bg_request__customized_fields_save', evt.data.payload);
                 break;
 

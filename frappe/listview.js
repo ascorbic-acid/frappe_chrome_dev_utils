@@ -1,12 +1,14 @@
 function idfListviewRefresh(tabId) {
-    idfExec((args)=>{
+    idfExec((args) => {
         if (cur_list) {
             // add bulk edit to list views
-            cur_list.page.clear_custom_actions();
+            if (cur_list.page.clear_custom_actions) {
+                cur_list.page.clear_custom_actions();
+            }
             let idf_group = cur_list.page.add_custom_button_group("IDF")
 
             // Bulk Fields Edit
-            cur_list.page.add_custom_menu_item(idf_group, "Bulk Edit", ()=>{
+            cur_list.page.add_custom_menu_item(idf_group, "Bulk Edit", () => {
                 let checked = cur_list.get_checked_items();
 
                 if (checked.length == 0) {
@@ -35,7 +37,7 @@ function idfListviewRefresh(tabId) {
                     title: `IDF: Bulk Edit for ${checked.length} Row(s).`,
                     fields: dialog_fields,
                     primary_action_label: "Submit",
-                    primary_action: function(values) {
+                    primary_action: function (values) {
                         for (let i = checked.length - 1; i >= 0; i--) {
                             frappe.call({
                                 method: "frappe.client.set_value",
@@ -44,7 +46,7 @@ function idfListviewRefresh(tabId) {
                                     name: checked[i].name,
                                     fieldname: values
                                 },
-                                callback: function(r) {
+                                callback: function (r) {
                                     console.log(r.message)
                                 }
                             })
@@ -59,5 +61,5 @@ function idfListviewRefresh(tabId) {
             );
         }
     }
-    , {}, tabId);
+        , {}, tabId);
 }
