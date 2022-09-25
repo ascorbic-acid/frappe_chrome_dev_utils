@@ -45,7 +45,7 @@ function idfFormRefresh(tabId) {
                 opsDiv.style.marginLeft = "10px";
 
                 opsDiv.innerHTML = `
-                    <svg class="icon icon-sm"><use href="#icon-tool"></use></svg>
+                    <svg class="icon icon-sm" style="fill: aliceblue"><use href="#icon-tool"></use></svg>
                 `;
                 opsDiv.addEventListener("click", function(e) {
                     postMessage({
