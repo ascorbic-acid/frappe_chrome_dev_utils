@@ -102,23 +102,6 @@ function idfFormRefresh(tabId) {
                 }
             }
             cur_frm.refresh_fields();
-            
-            // register keyboard event Ctrl+X
-            // if (!idfConfig.ctrl_x) {
-            //     idfConfig.ctrl_x = true;
-            //     $(document).keydown(function(e) {
-            //         if (e.ctrlKey && e.keyCode == 88) {
-            //             let targetField = document.querySelectorAll("div.frappe-control[aria-describedby]");
-            //             let fieldname = targetField[0].getAttribute("data-fieldname");
-            //             postMessage({
-            //                 eventName: "idf_cs_request__show_options_dialog",
-            //                 payload: fieldname
-            //             });
-            //         }
-            //         ;
-            //     });
-            // }
-
         }
 
     }
@@ -131,7 +114,6 @@ function idfShowOptionsDialog(args, tabId) {
         // prepare field info
         if (!fieldData.df.options)
             fieldData.df.options = "";
-        // rmeove newline chars
 
         var dialog = new frappe.ui.Dialog({
             title: `IDF: Field Info`,
@@ -170,7 +152,6 @@ function idfShowOptionsDialog(args, tabId) {
                     if (fieldData.df.fieldtype == "Table") {
                         let table;
                         if(dialog.get_value("only_selected_rows")) {
-                            // const grid = cur_frm.get_field(fieldData.df.fieldname); 
                             table = fieldData.grid.get_selected_children()
                         } else {
                             table = cur_frm.doc[fieldData.df.fieldname];
@@ -221,7 +202,6 @@ function idfShowOptionsDialog(args, tabId) {
                 fieldtype: 'Button',
                 click: (val)=>{
                     if (fieldData.df.parent == "Customize Form" && fieldData.df.fieldname == "fields") {
-                        // get custom fields
                         let fields = cur_frm.doc.fields;
                         let customFields = [];
 
@@ -231,7 +211,6 @@ function idfShowOptionsDialog(args, tabId) {
                                 customFields.push(fields[i]);
                             }
                         }
-
                         postMessage({
                             eventName: "idf_cs_request__customized_fields_save",
                             payload: customFields

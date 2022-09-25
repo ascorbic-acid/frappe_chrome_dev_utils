@@ -1,3 +1,5 @@
+## About
+A simple Browser Extension that help you work & develop in Frappe/ERPNext Framework
 
 ## Get Started
  Install the extention from the [Chrome Web Store](https://chrome.google.com/webstore/detail/frappe-development-utils/mfpfeokebfgddkaemagjigbjkmohmpab) 

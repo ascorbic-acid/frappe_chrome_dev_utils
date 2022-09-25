@@ -11,7 +11,6 @@ function pageLoaded(tabId) {
 
 }
 
-// payload is cur_frm.doc['field']
 async function saveChildTableData(payload) {
     await chrome.storage.local.set({
         "storage__childtable_data": payload
@@ -25,7 +24,7 @@ async function insertChildtableData(fieldname, tabId) {
         childData: childData.storage__childtable_data
     }
 
-    idfExec((args)=>{
+    idfExec((args) => {
         cur_frm.clear_table(args.fieldname);
         for (row of args.childData) {
             // skip insertion of fields
@@ -42,7 +41,7 @@ async function insertChildtableData(fieldname, tabId) {
         }
         cur_frm.refresh_field(args.fieldname);
     }
-    , args, tabId)
+        , args, tabId)
 }
 
 // Customization
@@ -58,15 +57,14 @@ async function insertCustomizedFields(tabId) {
         savedData: savedData.storage__customized_fields_data
     }
 
-    idfExec((args)=>{
+    idfExec((args) => {
         let rows = args.savedData;
 
         for (let i = 0; i < rows.length; i++) {
             delete rows[i]["name"];
 
             let nr = cur_frm.add_child("fields", rows[i]);
-            // reposition row to the insert_after_fieldname index
-            let new_index = cur_frm.doc.fields.findIndex(o=>o.fieldname === rows[i].insert_after_fieldname) + 1
+            let new_index = cur_frm.doc.fields.findIndex(o => o.fieldname === rows[i].insert_after_fieldname) + 1
             let new_row = cur_frm.doc.fields.splice(cur_frm.doc.fields.length - 1, 1);
 
             cur_frm.doc.fields.splice(new_index, 0, new_row[0]);
@@ -84,72 +82,57 @@ async function insertCustomizedFields(tabId) {
         }
         cur_frm.refresh_fields();
     }
-    , args, tabId)
+        , args, tabId)
 }
 
-chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     if (changeInfo.status == 'complete' && tab.active) {
-        // listen for future url changes
-        idfExec(()=>{
-            // if (!window.idfConfig) {
-                // var oFunc = frappe.ui.make_app_page
-
-                // frappe.ui.make_app_page = function(opts) {
-                //     oFunc.apply(this, [opts]);
-                //     console.log(opts);
-                //     // return oTrigger.apply(this, [event_name, doctype2, name]);
-                    
-                // }
-
-                // window["idfConfig"] = {};
-                // idfConfig.ctrl_x = false;
-                // idfConfig.inited_routes = [];
-                if(frappe.router) {
-                    frappe.router.on('change', ()=>{
-                        setTimeout(()=>{
-                            postMessage({
-                                eventName: "idf_cs_request__route_changed",
-                                payload: frappe.router.current_route
-                            })
-                        }
-                        , 500);
+        idfExec(() => {
+            if (frappe.router) {
+                frappe.router.on('change', () => {
+                    setTimeout(() => {
+                        postMessage({
+                            eventName: "idf_cs_request__route_changed",
+                            payload: frappe.router.current_route
+                        })
                     }
-                    );
+                        , 500);
                 }
-            // }
+                );
+            }
         }
-        , {}, tab.id);
+            , {}, tab.id);
     }
 })
 
 // listen for content script messages
-chrome.runtime.onMessage.addListener(async(event,sender,sendResponse)=>{
+chrome.runtime.onMessage.addListener(async (event, sender, sendResponse) => {
     const tabId = sender.tab.id;
     // console.log("BG: ", event.eventName);
     switch (event.eventName) {
-    case "idf_bg_request__route_changed":
-        pageLoaded(tabId);
-        break;
-    case "idf_bg_request__page_loaded":
-        pageLoaded(tabId);
-        break;
-    case "idf_bg_request__show_options_dialog":
-        idfShowOptionsDialog({
-            fieldname: event.payload
-        }, tabId);
-        break;
-    case "idf_bg_request__childtable_save":
-        saveChildTableData(event.payload);
-        break;
-    case "idf_bg_request__childtable_insert":
-        insertChildtableData(event.payload, tabId);
-        break;
-    case "idf_bg_request__customized_fields_save":
-        saveCustomizedFields(event.payload);
-        break;
-    case "idf_bg_request__customized_fields_insert":
-        insertCustomizedFields(tabId);
-        break;
+        case "idf_bg_request__route_changed":
+            pageLoaded(tabId);
+            break;
+        case "idf_bg_request__page_loaded":
+            pageLoaded(tabId);
+            break;
+        case "idf_bg_request__show_options_dialog":
+            idfShowOptionsDialog({
+                fieldname: event.payload
+            }, tabId);
+            break;
+        case "idf_bg_request__childtable_save":
+            saveChildTableData(event.payload);
+            break;
+        case "idf_bg_request__childtable_insert":
+            insertChildtableData(event.payload, tabId);
+            break;
+        case "idf_bg_request__customized_fields_save":
+            saveCustomizedFields(event.payload);
+            break;
+        case "idf_bg_request__customized_fields_insert":
+            insertCustomizedFields(tabId);
+            break;
     }
 });
 
