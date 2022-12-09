@@ -63,10 +63,14 @@ function idfFormRefresh(tabId) {
                     } else if(field.wrapper.firstElementChild.classList.contains("form-group")) {
                         const label = field.wrapper.firstElementChild.querySelector(".form-group > .clearfix")
                         label.appendChild(opsDiv);
-                        // table fields
+                        // table field
                     } else if(field.wrapper.firstElementChild.classList.contains("control-label")) {
                         const label = field.wrapper.firstElementChild;
                         label.appendChild(opsDiv);
+                        // table field v14
+                    } else if(field.wrapper.firstElementChild.classList.contains("grid-field")) {
+                        const label = field.wrapper.firstElementChild;
+                        label.prepend(opsDiv);
                     }
                 }
 
