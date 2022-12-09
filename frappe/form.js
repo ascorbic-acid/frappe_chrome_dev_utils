@@ -116,8 +116,24 @@ function idfShowOptionsDialog(args, tabId) {
     idfExec((args)=>{
         let fieldData = cur_frm.get_field(args.fieldname);
         // prepare field info
-        if (!fieldData.df.options)
+        if (!fieldData.df.options) {
             fieldData.df.options = "";
+        }
+
+        let openDocButtonsHTML = "";
+        
+        if(["Link", "Table", "Table MultiSelect"].includes(fieldData.df.fieldtype)){
+            openDocButtonsHTML = `
+                <button
+                    class="btn btn-sm btn-options" 
+                    onclick="frappe.set_route('Form', 'Customize Form', { doc_type: '${fieldData.df.options}'})"
+                >C</button>
+                <button
+                    class="btn btn-sm btn-options" 
+                    onclick="frappe.set_route('doctype/${fieldData.df.options}')"
+                >D</button>
+            `;
+        }
 
         var dialog = new frappe.ui.Dialog({
             title: `IDF: Field Info`,
@@ -137,9 +153,27 @@ function idfShowOptionsDialog(args, tabId) {
                             <div><p>Type: <strong>${fieldData.df.fieldtype}</strong></p></div>
                             <div><p>Hidden: <strong>${fieldData.df.hidden}</strong> </p></div>
 
-                            <div><p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.options.replace(/\s/g, " ")}');cur_dialog.hide();" style="cursor: pointer;">Options: <strong>${fieldData.df.options} </strong> <p></div>
+                            <div>
+                                <p
+                                    onclick="frappe.utils.copy_to_clipboard('${fieldData.df.options.replace(/\s/g, " ")}');cur_dialog.hide();"
+                                    style="cursor: pointer;">
+                                        Options: <strong>${fieldData.df.options} </strong>
+                                        ${openDocButtonsHTML}
+
+                                <p>
+                            </div>
                             <div><p>In ListView: <strong>${fieldData.df.in_list_view}</strong> </p></div>
                         </div>
+                        <style>
+                            .btn-options {
+                                height: 20px;
+                                padding-top: 0px;
+                                padding-right: 0px;
+                                width: 18px;
+                                padding-bottom: 0px;
+                                padding-left: 0px;
+                            }
+                        </style>
                     `
             }, {
                 fieldtype: "Section Break"
