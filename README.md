@@ -10,15 +10,14 @@ A simple Browser Extension that help you work & develop in Frappe/ERPNext Framew
 
 ## Features
 
+- Support Frappe v13, v14
 - Force forms save when clicking (Save) button even if nothing changed
 - Highlight the hidden and custom fields in any DocType
 - Show & change hidden fields in any DocType
 - Show fields details including field name, type, options, etc
-- Copy any child table data from any ERPNext site
-- Insert your saved child table data to any ERPNext site
-- Save Customize Form custom fields from any ERPNext site
-- Insert your saved (Customize Form) custom fields to any ERPNext site
-- Bulk Edit all selected rows in the list view in one click
+- Fast Access to Customize Form/DocType for field Options of type Link, Table & Table MultiSelect
+- Copy/Insert any child table rows data from/to any ERPNext site
+- Copy/Insert any Customize Form custom fields from/to any ERPNext site
 
 #### Feel free to contribute in any way to improve the extension if you like it
 

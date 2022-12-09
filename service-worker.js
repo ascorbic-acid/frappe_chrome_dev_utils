@@ -1,5 +1,5 @@
-importScripts('frappe/listview.js')
 importScripts('frappe/form.js')
+// importScripts('frappe/listview.js')
 
 // called when frappe page is fully ready
 function pageLoaded(tabId) {
@@ -7,7 +7,7 @@ function pageLoaded(tabId) {
     idfFormRefresh(tabId);
 
     // exec listview scripts
-    idfListviewRefresh(tabId);
+    // idfListviewRefresh(tabId);
 
 }
 
