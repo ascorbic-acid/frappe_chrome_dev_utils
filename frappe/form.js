@@ -10,13 +10,6 @@ function idfFormRefresh(tabId) {
                 cur_frm["idf_inited"] = true;
             }
 
-            // if (idfConfig.inited_routes.find(el=>el === routeId)) {
-            //     console.log('inited return');
-            //     return
-            // }
-
-            // idfConfig.inited_routes.push(routeId);
-
             // patch save button to force save if the form did not change
             var origin_save_func = frappe.ui.form.save
             frappe.ui.form.save = function(frm, action, callback, btn) {
@@ -33,11 +26,6 @@ function idfFormRefresh(tabId) {
                 if(field.df.fieldname == "__newname")
                     continue;
 
-                // init tooltip for each field
-                // $(field.wrapper).tooltip({
-                //     animation: true,
-                //     title: field.df.fieldname + "  (Ctrl+X)"
-                // });
                 let opsDiv = document.createElement("div");
                 opsDiv.style.display = "inline-block"
                 opsDiv.style.cursor = "pointer";
@@ -287,7 +275,6 @@ function idfShowOptionsDialog(args, tabId) {
             }
         });
         dialog.show();
-
     }
     , args, tabId);
 }
