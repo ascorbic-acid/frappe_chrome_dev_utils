@@ -1,42 +1,24 @@
-async function main(evt) {
-    await waitFrappeField();
-    // notify background of page fully ready
-    backgroundMessage("idf_bg_request__page_loaded")
-}
-
-// utils
-async function backgroundMessage(eventName, payload) {
-    chrome.runtime.sendMessage(
-        {
-            eventName: eventName,
-            payload: payload
-        }
-    );
-}
-
-
 // Listen for page scripts
-window.addEventListener("message", async (evt) => {
-    if (evt.origin === window.origin) {
-        // message.origin = window.location.origin
+window.addEventListener("message", async (event) => {
+    if (event.origin === window.origin) {
         // console.log("CS: ", evt.data.eventName);
-        switch (evt.data.eventName) {
-            case "idf_cs_request__route_changed":
-                backgroundMessage("idf_bg_request__route_changed", evt.data.payload);
+        switch (event.data.eventName) {
+            case "idf_cs_request__form_trigger":
+                backgroundMessage("idf_bg_request__form_trigger", event.data.payload);
                 break;
             case "idf_cs_request__show_options_dialog":
-                backgroundMessage("idf_bg_request__show_options_dialog", evt.data.payload);
+                backgroundMessage("idf_bg_request__show_options_dialog", event.data.payload);
                 break;
             case "idf_cs_request__childtable_save":
-                backgroundMessage('idf_bg_request__childtable_save', evt.data.payload);
+                backgroundMessage('idf_bg_request__childtable_save', event.data.payload);
                 break;
 
             case "idf_cs_request__childtable_insert":
-                backgroundMessage('idf_bg_request__childtable_insert', evt.data.payload);
+                backgroundMessage('idf_bg_request__childtable_insert', event.data.payload);
                 break;
 
             case "idf_cs_request__customized_fields_save":
-                backgroundMessage('idf_bg_request__customized_fields_save', evt.data.payload);
+                backgroundMessage('idf_bg_request__customized_fields_save', event.data.payload);
                 break;
 
             case "idf_cs_request__customized_fields_insert":
@@ -45,29 +27,13 @@ window.addEventListener("message", async (evt) => {
         }
     }
 });
-window.addEventListener("load", main, false);
 
-
-function waitFrappeField() {
-    const selector = "[data-fieldname]"
-    return new Promise((resolve) => {
-        const target = document.querySelector(selector)
-        if (target) {
-            return resolve(target)
+// utils
+async function backgroundMessage(eventName, payload) {
+    chrome.runtime.sendMessage(
+        {
+            eventName: eventName,
+            payload: payload
         }
-
-        const observer = new MutationObserver((mutations) => {
-            const target = document.querySelector(selector)
-            if (target) {
-                resolve(target);
-                observer.disconnect();
-            }
-        }
-        );
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    }
     );
 }

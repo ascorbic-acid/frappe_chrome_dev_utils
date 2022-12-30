@@ -1,107 +1,107 @@
-function idfFormRefresh(tabId) {
-    idfExec((args)=>{
-        // let[route_type,doctype,docname] = frappe.router.current_route;
-        // let routeId = `${doctype}${docname}`;
-
-        if (cur_frm) {
-            if(cur_frm["idf_inited"]) {
-                return;
-            } else   {
-                cur_frm["idf_inited"] = true;
+function formRefresh(tabId, eventName, doctype, name) {
+    idfExec(({ eventName, doctype, name }) => {
+        let frm = cur_frm;
+        
+        // add force save button
+        if(!frm.is_dirty() && (frm.doc.docstatus === 0 || frm.doc.docstatus === 1)) {
+            // temp fix to avoid duplicate buttons
+            if(document.querySelector(".idf__force-save-btn")) {
+                document.querySelector(".idf__force-save-btn").remove();
             }
-
-            // patch save button to force save if the form did not change
-            var origin_save_func = frappe.ui.form.save
-            frappe.ui.form.save = function(frm, action, callback, btn) {
+            frm.page.add_button(frm.doc.docstatus === 0 ? "Force Save" : "Force Submit", function () {
                 frm.dirty();
-                origin_save_func.apply(this, [frm, action, callback, btn]);
-            }
-
-            // patch fields
-            for (let i = 0; i < cur_frm.fields.length; i++) {
-                let field = cur_frm.fields[i];
-                if (!field.wrapper.querySelector)
-                    continue;
-                
-                if(field.df.fieldname == "__newname")
-                    continue;
-
-                let opsDiv = document.createElement("div");
-                opsDiv.style.display = "inline-block"
-                opsDiv.style.cursor = "pointer";
-                opsDiv.style.marginRight = "10px";
-                opsDiv.style.marginLeft = "10px";
-
-                opsDiv.innerHTML = `
-                    <svg class="icon icon-sm" style="fill: aliceblue"><use href="#icon-tool"></use></svg>
-                `;
-                opsDiv.addEventListener("click", function(e) {
-                    postMessage({
-                        eventName: "idf_cs_request__show_options_dialog",
-                        payload: field.df.fieldname
-                    });
-                });
-
-                if(field.wrapper.firstElementChild) {
-                    // checkbox fields
-                    if(field.wrapper.firstElementChild.classList.contains("checkbox")) {
-                        const label = field.wrapper.firstElementChild.querySelector("label")
-                        label.appendChild(opsDiv);
-                        // standard fields
-                    } else if(field.wrapper.firstElementChild.classList.contains("form-group")) {
-                        const label = field.wrapper.firstElementChild.querySelector(".form-group > .clearfix")
-                        label.appendChild(opsDiv);
-                        // table field
-                    } else if(field.wrapper.firstElementChild.classList.contains("control-label")) {
-                        const label = field.wrapper.firstElementChild;
-                        label.appendChild(opsDiv);
-                        // table field v14
-                    } else if(field.wrapper.firstElementChild.classList.contains("grid-field")) {
-                        const label = field.wrapper.firstElementChild;
-                        label.prepend(opsDiv);
-                    }
-                }
-
-
-                if (!field.df.is_custom_field)
-                    field.df.is_custom_field = "0";
-                if (!field.df.hidden)
-                    field.df.hidden = "0";
-
-                if (location.pathname.includes("/app/customize-form"))
-                    field.df.old_hidden = field.df.hidden;
-
-                // show all hidden fields & highlight custom fields
-                if (field.df.hidden === 1) {
-                    //save old hidden value
-                    field.df.old_hidden = 1;
-                    field.df.hidden = 0;
-
-                    let control_label = field.wrapper.querySelector(".control-label");
-                    if (field.df.is_custom_field === 1) {
-                        field.df.label += "  (HIDDEN)";
-                        field.wrapper.style.color = "darksalmon";
-                        if (control_label) {
-                            control_label.style.color = "darksalmon";
-                        }
-                    } else {
-                        field.df.label += "  (HIDDEN)";
-                        field.wrapper.style.color = "brown";
-                        if (control_label) {
-                            control_label.style.color = "brown";
-                        }
-                    }
-                }
-            }
-            cur_frm.refresh_fields();
+                frm.save_or_update();
+            }, {btn_class: "btn-warning idf__force-save-btn"});
         }
+        
+        if (frm["idf_inited"]) {
+            return;
+        } else {
+            frm["idf_inited"] = true;
+        }
+        
+        // patch fields
+        for (let i = 0; i < frm.fields.length; i++) {
+            let field = frm.fields[i];
+            if (!field.wrapper.querySelector)
+                continue;
 
+            if (field.df.fieldname == "__newname")
+                continue;
+
+            let opsDiv = document.createElement("div");
+            opsDiv.style.display = "inline-block"
+            opsDiv.style.cursor = "pointer";
+            opsDiv.style.marginRight = "10px";
+            opsDiv.style.marginLeft = "10px";
+
+            opsDiv.innerHTML = `
+                <svg class="icon icon-sm" style="fill: aliceblue"><use href="#icon-tool"></use></svg>
+            `;
+            opsDiv.addEventListener("click", function (e) {
+                postMessage({
+                    eventName: "idf_cs_request__show_options_dialog",
+                    payload: field.df.fieldname
+                });
+            });
+
+            if (field.wrapper.firstElementChild) {
+                // checkbox fields
+                if (field.wrapper.firstElementChild.classList.contains("checkbox")) {
+                    const label = field.wrapper.firstElementChild.querySelector("label")
+                    label.appendChild(opsDiv);
+                    // standard fields
+                } else if (field.wrapper.firstElementChild.classList.contains("form-group")) {
+                    const label = field.wrapper.firstElementChild.querySelector(".form-group > .clearfix")
+                    label.appendChild(opsDiv);
+                    // table field
+                } else if (field.wrapper.firstElementChild.classList.contains("control-label")) {
+                    const label = field.wrapper.firstElementChild;
+                    label.appendChild(opsDiv);
+                    // table field v14
+                } else if (field.wrapper.firstElementChild.classList.contains("grid-field")) {
+                    const label = field.wrapper.firstElementChild;
+                    label.prepend(opsDiv);
+                }
+            }
+
+            if (!field.df.is_custom_field)
+                field.df.is_custom_field = "0";
+            if (!field.df.hidden)
+                field.df.hidden = "0";
+
+            if (location.pathname.includes("/app/customize-form"))
+                field.df.old_hidden = field.df.hidden;
+
+            // show all hidden fields & highlight custom fields
+            if (field.df.hidden === 1) {
+                //save old hidden value
+                field.df.old_hidden = 1;
+                field.df.hidden = 0;
+
+                let control_label = field.wrapper.querySelector(".control-label");
+                if (field.df.is_custom_field === 1) {
+                    field.df.label += "  (HIDDEN)";
+                    field.wrapper.style.color = "darksalmon";
+                    if (control_label) {
+                        control_label.style.color = "darksalmon";
+                    }
+                } else {
+                    field.df.label += "  (HIDDEN)";
+                    field.wrapper.style.color = "brown";
+                    if (control_label) {
+                        control_label.style.color = "brown";
+                    }
+                }
+            }
+        }
+        frm.refresh_fields();
     }
-    , {}, tabId);
+        , { eventName, doctype, name }, tabId);
 }
 
 function idfShowOptionsDialog(args, tabId) {
-    idfExec((args)=>{
+    idfExec((args) => {
         let fieldData = cur_frm.get_field(args.fieldname);
         // prepare field info
         if (!fieldData.df.options) {
@@ -109,16 +109,16 @@ function idfShowOptionsDialog(args, tabId) {
         }
 
         let openDocButtonsHTML = "";
-        
-        if(["Link", "Table", "Table MultiSelect"].includes(fieldData.df.fieldtype)){
+
+        if (["Link", "Table", "Table MultiSelect"].includes(fieldData.df.fieldtype)) {
             openDocButtonsHTML = `
                 <button
                     class="btn btn-sm btn-options" 
-                    onclick="frappe.set_route('Form', 'Customize Form', { doc_type: '${fieldData.df.options}'})"
+                    onclick="event.stopPropagation(); frappe.set_route('Form', 'Customize Form', { doc_type: '${fieldData.df.options}'})"
                 >C</button>
                 <button
                     class="btn btn-sm btn-options" 
-                    onclick="frappe.set_route('doctype/${fieldData.df.options}')"
+                    onclick="event.stopPropagation(); frappe.set_route('doctype/${fieldData.df.options}')"
                 >D</button>
             `;
         }
@@ -147,9 +147,8 @@ function idfShowOptionsDialog(args, tabId) {
                                     style="cursor: pointer;">
                                         Options: <strong>${fieldData.df.options} </strong>
                                         ${openDocButtonsHTML}
-                                        
-                                        <p>
-                                        </div>
+                                <p>
+                            </div>
                             <div><p>Is Custom: <strong>${fieldData.df.is_custom_field}</strong> </p></div>
                         </div>
                         <style>
@@ -174,10 +173,10 @@ function idfShowOptionsDialog(args, tabId) {
                 label: 'Copy Table Data',
                 fieldname: 'copy_table_data',
                 fieldtype: 'Button',
-                click: (val)=>{
+                click: (val) => {
                     if (fieldData.df.fieldtype == "Table") {
                         let table;
-                        if(dialog.get_value("only_selected_rows")) {
+                        if (dialog.get_value("only_selected_rows")) {
                             table = fieldData.grid.get_selected_children()
                         } else {
                             table = cur_frm.doc[fieldData.df.fieldname];
@@ -200,13 +199,13 @@ function idfShowOptionsDialog(args, tabId) {
                 fieldtype: 'Check',
                 description: 'if not checked copy all rows'
             }
-            ,{
+                , {
                 fieldtype: "Column Break"
             }, {
                 label: 'Insert Saved Table Data',
                 fieldname: 'copy_table_data',
                 fieldtype: 'Button',
-                click: (val)=>{
+                click: (val) => {
                     if (fieldData.df.fieldtype == "Table") {
                         postMessage({
                             eventName: "idf_cs_request__childtable_insert",
@@ -226,7 +225,7 @@ function idfShowOptionsDialog(args, tabId) {
                 label: 'Copy Customized Fields',
                 fieldname: 'copy_customized_fields',
                 fieldtype: 'Button',
-                click: (val)=>{
+                click: (val) => {
                     if (fieldData.df.parent == "Customize Form" && fieldData.df.fieldname == "fields") {
                         let fields = cur_frm.doc.fields;
                         let customFields = [];
@@ -254,7 +253,7 @@ function idfShowOptionsDialog(args, tabId) {
                 label: 'Insert Saved Customized Fields',
                 fieldname: 'inser_customized_fields',
                 fieldtype: 'Button',
-                click: (val)=>{
+                click: (val) => {
                     if (fieldData.df.parent == "Customize Form" && fieldData.df.fieldname == "fields") {
                         postMessage({
                             eventName: "idf_cs_request__customized_fields_insert"
@@ -268,7 +267,7 @@ function idfShowOptionsDialog(args, tabId) {
                 }
             }, {
                 fieldtype: "Section Break"
-            }, ],
+            },],
             primary_action_label: 'Done',
             primary_action(values) {
                 cur_dialog.hide();
@@ -276,5 +275,5 @@ function idfShowOptionsDialog(args, tabId) {
         });
         dialog.show();
     }
-    , args, tabId);
+        , args, tabId);
 }

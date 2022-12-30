@@ -1,14 +1,16 @@
-importScripts('frappe/form.js')
+importScripts('frappe/form.js');
 // importScripts('frappe/listview.js')
 
 // called when frappe page is fully ready
-function pageLoaded(tabId) {
+function formTrigger(tabId, eventName, doctype, name) {
     // exec form scripts
-    idfFormRefresh(tabId);
+    if (eventName == "refresh") {
+        formRefresh(tabId, eventName, doctype, name);
+    }
 
+    // TODO: patch a forward listview load/refresh events here
     // exec listview scripts
     // idfListviewRefresh(tabId);
-
 }
 
 async function saveChildTableData(payload) {
@@ -41,7 +43,7 @@ async function insertChildtableData(fieldname, tabId) {
         }
         cur_frm.refresh_field(args.fieldname);
     }
-        , args, tabId)
+        , args, tabId);
 }
 
 // Customization
@@ -82,24 +84,48 @@ async function insertCustomizedFields(tabId) {
         }
         cur_frm.refresh_fields();
     }
-        , args, tabId)
+        , args, tabId);
 }
 
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     if (changeInfo.status == 'complete' && tab.active) {
         idfExec(() => {
-            if (frappe.router) {
-                frappe.router.on('change', () => {
+            // init idf state
+            if (!window["idfState"]) {
+                window["idfState"] = {pageInit: false}
+            }
+
+            // perfect & official way to detect frappe form events and run scripts
+            // patch script manager to listen for frappe forms onload, refresh etc
+            if (!window.idfState.pageInit) {
+                window.idfState.pageInit = true;
+                let oriTrigger = frappe.ui.form.ScriptManager.prototype.trigger;
+
+                frappe.ui.form.ScriptManager.prototype.trigger = function (...args) {
                     setTimeout(() => {
                         postMessage({
-                            eventName: "idf_cs_request__route_changed",
-                            payload: frappe.router.current_route
-                        })
+                            eventName: "idf_cs_request__form_trigger",
+                            payload: args
+                        });
                     }
-                        , 500);
+                        , 50);
+                    return oriTrigger.call(this, ...args);
                 }
-                );
             }
+
+            // old and buggy way to detect route change and run form scripts
+            // if (frappe.router) {
+            //     frappe.router.on('change', () => {
+            //         setTimeout(() => {
+            //             postMessage({
+            //                 eventName: "idf_cs_request__route_changed",
+            //                 payload: frappe.router.current_route
+            //             })
+            //         }
+            //             , 500);
+            //     }
+            //     );
+            // }
         }
             , {}, tab.id);
     }
@@ -110,11 +136,8 @@ chrome.runtime.onMessage.addListener(async (event, sender, sendResponse) => {
     const tabId = sender.tab.id;
     // console.log("BG: ", event.eventName);
     switch (event.eventName) {
-        case "idf_bg_request__route_changed":
-            pageLoaded(tabId);
-            break;
-        case "idf_bg_request__page_loaded":
-            pageLoaded(tabId);
+        case "idf_bg_request__form_trigger":
+            formTrigger(tabId, ...event.payload);
             break;
         case "idf_bg_request__show_options_dialog":
             idfShowOptionsDialog({
