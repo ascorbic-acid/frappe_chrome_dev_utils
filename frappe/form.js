@@ -136,21 +136,21 @@ function idfShowOptionsDialog(args, tabId) {
                 options: ` <div style="display: grid; grid-template-columns: auto auto">
 
                             <div><p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.fieldname}');cur_dialog.hide();" style="cursor: pointer;">Name: <strong>${fieldData.df.fieldname} </strong> </p></div>
-                            <div><p>Is Custom: <strong>${fieldData.df.is_custom_field}</strong> </p></div>
-
+                            <div><p>Field No.: <strong>${fieldData.df.idx}</strong> </p></div>
+                            
                             <div><p>Type: <strong>${fieldData.df.fieldtype}</strong></p></div>
-                            <div><p>Hidden: <strong>${fieldData.df.hidden}</strong> </p></div>
-
+                            <div><p>In ListView: <strong>${fieldData.df.in_list_view}</strong> </p></div>
+                            
                             <div>
                                 <p
                                     onclick="frappe.utils.copy_to_clipboard('${fieldData.df.options.replace(/\s/g, " ")}');cur_dialog.hide();"
                                     style="cursor: pointer;">
                                         Options: <strong>${fieldData.df.options} </strong>
                                         ${openDocButtonsHTML}
-
-                                <p>
-                            </div>
-                            <div><p>In ListView: <strong>${fieldData.df.in_list_view}</strong> </p></div>
+                                        
+                                        <p>
+                                        </div>
+                            <div><p>Is Custom: <strong>${fieldData.df.is_custom_field}</strong> </p></div>
                         </div>
                         <style>
                             .btn-options {
