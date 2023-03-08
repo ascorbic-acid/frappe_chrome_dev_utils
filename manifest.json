@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "Frappe/ERPNext Tools",
     "description": "Simple Extension that help you work & develop with Frappe/ERPNext Framework",
-    "version": "1.1.2",
+    "version": "1.1.5",
     "icons": {
         "16": "logo/logo.png",
         "48": "logo/logo.png",
@@ -17,5 +17,12 @@
     }],
     "background": {
         "service_worker": "service-worker.js"
-    }
+    },
+    "web_accessible_resources": [
+        {
+          "resources": [ "logo/logo.png" ],
+           // Note: matching "http://*/app/*" did not work
+          "matches": [ "<all_urls>" ]
+        }
+      ] 
 }

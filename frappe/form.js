@@ -1,47 +1,97 @@
-function formRefresh(tabId, eventName, doctype, name) {
-    idfExec(({ eventName, doctype, name }) => {
+
+function formGridRender(tabId, doctype, docname) {
+    idfExec(({ doctype, docname }) => {
         let frm = cur_frm;
-        
+
+        let parentField = frappe.meta.get_parentfield(frm.doctype, doctype);
+
+        let openFormGrid = frm.fields_dict[parentField].grid.open_grid_row
+
+        for (let k in openFormGrid.fields_dict) {
+            let field = openFormGrid.fields_dict[k];
+
+            if (field.df.fieldtype === "Column Break" ||
+                field.df.fieldtype === "Section Break" ||
+                field.df.fieldtype === "Tab Break"
+            ) continue;
+
+            let opsDiv = document.createElement("div");
+            opsDiv.classList.add("idf-child-control")
+            opsDiv.style.display = "inline-block"
+            opsDiv.style.cursor = "pointer";
+            opsDiv.style.marginRight = "3px";
+            opsDiv.style.marginLeft = "3px";
+            opsDiv.innerHTML = window.idfState.idfLogoUrl2;
+
+            opsDiv.addEventListener("click", function (event) {
+                event.stopPropagation();
+                postMessage({
+                    eventName: "idf_cs_request__show_options_dialog",
+                    payload: {
+                        doctype: doctype,
+                        fieldname: field.df.fieldname
+                    }
+                });
+            });
+            if (field.wrapper.firstElementChild) {
+                // checkbox fields
+                if (field.wrapper.firstElementChild.classList.contains("checkbox")) {
+                    const label = field.wrapper.firstElementChild.querySelector("label")
+                    label.appendChild(opsDiv);
+                    // standard fields
+                } else if (field.wrapper.firstElementChild.classList.contains("form-group")) {
+                    const label = field.wrapper.firstElementChild.querySelector(".form-group > .clearfix")
+                    label.appendChild(opsDiv);
+                }
+            }
+        }
+
+    },
+        { doctype, docname }, tabId);
+}
+
+function formRefresh(tabId, doctype, docname) {
+    idfExec(({ doctype, name }) => {
+        let frm = cur_frm;
+
         // add force save button
-        if(!frm.is_dirty() && (frm.doc.docstatus === 0 || frm.doc.docstatus === 1)) {
+        if (!frm.is_dirty() && (frm.doc.docstatus === 0 || frm.doc.docstatus === 1)) {
             // temp fix to avoid duplicate buttons
-            if(document.querySelector(".idf__force-save-btn")) {
+            if (document.querySelector(".idf__force-save-btn")) {
                 document.querySelector(".idf__force-save-btn").remove();
             }
             frm.page.add_button(frm.doc.docstatus === 0 ? "Force Save" : "Force Submit", function () {
                 frm.dirty();
                 frm.save_or_update();
-            }, {btn_class: "btn-warning idf__force-save-btn"});
+            }, { btn_class: "btn-warning idf__force-save-btn" });
         }
-        
+
         if (frm["idf_inited"]) {
             return;
         } else {
             frm["idf_inited"] = true;
         }
-        
+
         // patch fields
         for (let i = 0; i < frm.fields.length; i++) {
             let field = frm.fields[i];
             if (!field.wrapper.querySelector)
                 continue;
 
-            if (field.df.fieldname == "__newname")
-                continue;
-
             let opsDiv = document.createElement("div");
             opsDiv.style.display = "inline-block"
             opsDiv.style.cursor = "pointer";
-            opsDiv.style.marginRight = "10px";
-            opsDiv.style.marginLeft = "10px";
+            opsDiv.style.marginRight = "3px";
+            opsDiv.style.marginLeft = "3px";
+            opsDiv.innerHTML = window.idfState.idfLogoUrl2;
 
-            opsDiv.innerHTML = `
-                <svg class="icon icon-sm" style="fill: aliceblue"><use href="#icon-tool"></use></svg>
-            `;
-            opsDiv.addEventListener("click", function (e) {
+            opsDiv.addEventListener("click", function (event) {
                 postMessage({
                     eventName: "idf_cs_request__show_options_dialog",
-                    payload: field.df.fieldname
+                    payload: {
+                        doctype: frm.doctype,
+                        fieldname: field.df.fieldname
+                    }
                 });
             });
 
@@ -96,35 +146,44 @@ function formRefresh(tabId, eventName, doctype, name) {
             }
         }
         frm.refresh_fields();
+    },
+        { doctype, docname }, tabId);
+}
+
+function formEvent(tabId, eventName, doctype, docname) {
+    if (eventName === "refresh") {
+        formRefresh(tabId, doctype, docname)
+    } else if (eventName == "form_render") {
+        formGridRender(tabId, doctype, docname)
     }
-        , { eventName, doctype, name }, tabId);
 }
 
 function idfShowOptionsDialog(args, tabId) {
     idfExec((args) => {
-        let fieldData = cur_frm.get_field(args.fieldname);
+        let fieldData = frappe.meta.get_docfield(args.doctype, args.fieldname);
+
         // prepare field info
-        if (!fieldData.df.options) {
-            fieldData.df.options = "";
+        if (!fieldData.options) {
+            fieldData.options = "";
         }
 
         let openDocButtonsHTML = "";
 
-        if (["Link", "Table", "Table MultiSelect"].includes(fieldData.df.fieldtype)) {
+        if (["Link", "Table", "Table MultiSelect"].includes(fieldData.fieldtype)) {
             openDocButtonsHTML = `
                 <button
                     class="btn btn-sm btn-options" 
-                    onclick="event.stopPropagation(); frappe.set_route('Form', 'Customize Form', { doc_type: '${fieldData.df.options}'})"
+                    onclick="event.stopPropagation(); frappe.set_route('Form', 'Customize Form', { doc_type: '${fieldData.options}'})"
                 >C</button>
                 <button
                     class="btn btn-sm btn-options" 
-                    onclick="event.stopPropagation(); frappe.set_route('doctype/${fieldData.df.options}')"
+                    onclick="event.stopPropagation(); frappe.set_route('doctype/${fieldData.options}')"
                 >D</button>
             `;
         }
 
         var dialog = new frappe.ui.Dialog({
-            title: `IDF: Field Info`,
+            title: `${window.idfState.idfLogoUrl2} Field Details`,
             fields: [{
                 label: `Details:`,
                 fieldname: "tables_options_section",
@@ -135,21 +194,21 @@ function idfShowOptionsDialog(args, tabId) {
                 fieldtype: "HTML",
                 options: ` <div style="display: grid; grid-template-columns: auto auto">
 
-                            <div><p onclick="frappe.utils.copy_to_clipboard('${fieldData.df.fieldname}');cur_dialog.hide();" style="cursor: pointer;">Name: <strong>${fieldData.df.fieldname} </strong> </p></div>
-                            <div><p>Field No.: <strong>${fieldData.df.idx}</strong> </p></div>
+                            <div><p onclick="frappe.utils.copy_to_clipboard('${fieldData.fieldname}');cur_dialog.hide();" style="cursor: pointer;">Name: <strong>${fieldData.fieldname} </strong> </p></div>
+                            <div><p>Field No.: <strong>${fieldData.idx}</strong> </p></div>
                             
-                            <div><p>Type: <strong>${fieldData.df.fieldtype}</strong></p></div>
-                            <div><p>In ListView: <strong>${fieldData.df.in_list_view}</strong> </p></div>
+                            <div><p>Type: <strong>${fieldData.fieldtype}</strong></p></div>
+                            <div><p>In ListView: <strong>${fieldData.in_list_view}</strong> </p></div>
                             
                             <div>
                                 <p
-                                    onclick="frappe.utils.copy_to_clipboard('${fieldData.df.options.replace(/\s/g, " ")}');cur_dialog.hide();"
+                                    onclick="frappe.utils.copy_to_clipboard('${fieldData.options.replace(/\s/g, " ")}');cur_dialog.hide();"
                                     style="cursor: pointer;">
-                                        Options: <strong>${fieldData.df.options} </strong>
+                                        Options: <strong>${fieldData.options} </strong>
                                         ${openDocButtonsHTML}
                                 <p>
                             </div>
-                            <div><p>Is Custom: <strong>${fieldData.df.is_custom_field}</strong> </p></div>
+                            <div><p>Is Custom: <strong>${fieldData.is_custom_field}</strong> </p></div>
                         </div>
                         <style>
                             .btn-options {
@@ -174,22 +233,22 @@ function idfShowOptionsDialog(args, tabId) {
                 fieldname: 'copy_table_data',
                 fieldtype: 'Button',
                 click: (val) => {
-                    if (fieldData.df.fieldtype == "Table") {
+                    if (fieldData.fieldtype == "Table") {
                         let table;
                         if (dialog.get_value("only_selected_rows")) {
                             table = fieldData.grid.get_selected_children()
                         } else {
-                            table = cur_frm.doc[fieldData.df.fieldname];
+                            table = cur_frm.doc[fieldData.fieldname];
                         }
                         postMessage({
                             eventName: "idf_cs_request__childtable_save",
                             payload: table
                         });
 
-                        frappe.show_alert(`IDF: Date of table: (${fieldData.df.fieldname}) saved to browser storage`, 8);
+                        frappe.show_alert(`${window.idfState.idfLogoUrl2} Date of table: (${fieldData.fieldname}) saved to browser storage`, 8);
                         cur_dialog.hide();
                     } else {
-                        frappe.show_alert(`IDF: Field: (${fieldData.df.fieldname}) is not a table`, 8);
+                        frappe.show_alert(`${window.idfState.idfLogoUrl2} Field: (${fieldData.fieldname}) is not a table`, 8);
                     }
                 }
             },
@@ -206,16 +265,16 @@ function idfShowOptionsDialog(args, tabId) {
                 fieldname: 'copy_table_data',
                 fieldtype: 'Button',
                 click: (val) => {
-                    if (fieldData.df.fieldtype == "Table") {
+                    if (fieldData.fieldtype == "Table") {
                         postMessage({
                             eventName: "idf_cs_request__childtable_insert",
-                            payload: fieldData.df.fieldname
+                            payload: fieldData.fieldname
                         });
 
-                        frappe.show_alert(`IDF: Data of table: (${fieldData.df.fieldname}) has been inserted`, 8);
+                        frappe.show_alert(`${window.idfState.idfLogoUrl2} Data of table: (${fieldData.fieldname}) has been inserted`, 8);
                         cur_dialog.hide();
                     } else {
-                        frappe.show_alert(`IDF: Field: (${fieldData.df.fieldname}) is not a table`, 8);
+                        frappe.show_alert(`${window.idfState.idfLogoUrl2} Field: (${fieldData.fieldname}) is not a table`, 8);
                     }
                 }
             }, // Customize Form
@@ -226,7 +285,7 @@ function idfShowOptionsDialog(args, tabId) {
                 fieldname: 'copy_customized_fields',
                 fieldtype: 'Button',
                 click: (val) => {
-                    if (fieldData.df.parent == "Customize Form" && fieldData.df.fieldname == "fields") {
+                    if (fieldData.parent == "Customize Form" && fieldData.fieldname == "fields") {
                         let fields = cur_frm.doc.fields;
                         let customFields = [];
 
@@ -241,10 +300,10 @@ function idfShowOptionsDialog(args, tabId) {
                             payload: customFields
                         });
 
-                        frappe.show_alert(`IDF: Customized Fields saved to browser storage`, 8);
+                        frappe.show_alert(`${window.idfState.idfLogoUrl2} Customized Fields saved to browser storage`, 8);
                         cur_dialog.hide();
                     } else {
-                        frappe.show_alert(`IDF: Only works on (fields) table in Customize Form doctype.`, 8);
+                        frappe.show_alert(`${window.idfState.idfLogoUrl2} Only works on (fields) table in Customize Form doctype.`, 8);
                     }
                 }
             }, {
@@ -254,15 +313,15 @@ function idfShowOptionsDialog(args, tabId) {
                 fieldname: 'inser_customized_fields',
                 fieldtype: 'Button',
                 click: (val) => {
-                    if (fieldData.df.parent == "Customize Form" && fieldData.df.fieldname == "fields") {
+                    if (fieldData.parent == "Customize Form" && fieldData.fieldname == "fields") {
                         postMessage({
                             eventName: "idf_cs_request__customized_fields_insert"
                         });
 
-                        frappe.show_alert(`IDF: Customized Fields has been inserted`, 8);
+                        frappe.show_alert(`${window.idfState.idfLogoUrl2} Customized Fields has been inserted`, 8);
                         cur_dialog.hide();
                     } else {
-                        frappe.show_alert(`IDF: Only works on (fields) table in Customize Form doctype.`, 8);
+                        frappe.show_alert(`${window.idfState.idfLogoUrl2} Only works on (fields) table in Customize Form doctype.`, 8);
                     }
                 }
             }, {
@@ -274,6 +333,6 @@ function idfShowOptionsDialog(args, tabId) {
             }
         });
         dialog.show();
-    }
-        , args, tabId);
+    },
+        args, tabId);
 }
