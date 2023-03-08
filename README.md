@@ -14,10 +14,12 @@ A simple Browser Extension that help you work & develop in Frappe/ERPNext Framew
 - Show & change hidden fields in any DocType
 - Force Save Non changed forms, Submittable forms & Submitted forms (re submit)
 - Highlight the hidden and custom fields in any DocType
-- Show fields details like fieldname, type, options, field No and more
+- Show forms fields & tables fields details
 - Fast Access to Customize Form/DocType for field Options of type Link, Table & Table MultiSelect
 - Copy/Insert any child table all/specific rows from/to any ERPNext site
 - Copy/Insert any Customize Form custom fields from/to any ERPNext site
+- Copy/Insert Doctypes data between ERPNext Sites
+
 
 #### Feel free to contribute in any way to improve the extension if you like it
 

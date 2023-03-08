@@ -21,7 +21,6 @@
     "web_accessible_resources": [
         {
           "resources": [ "logo/logo.png" ],
-           // Note: matching "http://*/app/*" did not work
           "matches": [ "<all_urls>" ]
         }
       ] 
