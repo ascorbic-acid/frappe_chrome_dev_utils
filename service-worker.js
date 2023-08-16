@@ -439,6 +439,85 @@ async function showInsertDocDataDialog(doctype, bucket = "Current Doc", tabId) {
         , args, tabId);
 }
 
+async function showCSVToolDialog(payload, tabId) {
+    let args = {}
+    idfExec((args) => {
+        let csv_tool_dialog = new frappe.ui.Dialog({
+            title: `${window.idfState.idfLogoUrl1} CSV Tool`,
+            fields: [
+                { label: __("Doctype"), fieldtype: "Data", fieldname: "current_doctype", read_only: 1, default: cur_list.doctype },
+                { fieldtype: "Column Break" },
+                {
+                    label: __("Get Import Template"),
+                    fieldtype: "Button",
+                    description: __("Note: Child Table Fields not supported when importing with this tool"),
+                    click: () => {
+                        frappe.new_doc("Data Import", {
+                            reference_doctype: csv_tool_dialog.get_field("current_doctype").value,
+                            import_type: __("Update Existing Records")
+                        }, () => {
+                            setTimeout(() => {
+                                cur_frm.script_manager.trigger("download_template")
+                            }, 2000)
+                        })
+
+
+                    }
+                },
+                { label: __("Data Import"), fieldtype: "Section Break" },
+                { label: __("Import Type"), fieldtype: "Select", options: ["Create Records", "Update Records"], default: "Update Records", read_only: 1 },
+                {
+                    fieldtype: "HTML",
+                    fieldname: "file_type",
+                    options: `
+                        <div>
+                            <label for="formFileLg" class="form-label">CSV File</label>
+                            <input class="form-control form-control-lg" id="formFileLg" type="file" accept=".csv">
+                        </div>
+                    `
+                },
+            ],
+            primary_action_label: `${window.idfState.idfLogoUrl1} Apply`,
+            primary_action: async function (values) {
+                csv_tool_dialog.hide();
+                let csvFile = document.querySelector("#formFileLg").files[0];
+                postMessage({
+                    eventName: "idf_cs_request__csv-tool-read_file",
+                    payload: {
+                        doctype: cur_list.doctype,
+                        docfields: frappe.meta.get_docfields(cur_list.doctype).map(df => {
+                            return { label: df.label, fieldname: df.fieldname }
+                        }),
+                        file: csvFile
+                    }
+                });
+                frappe.show_alert(`${window.idfState.idfLogoUrl1} in progress, pelase wait...`);
+            }
+        })
+        csv_tool_dialog.show();
+    }
+        , args, tabId);
+}
+
+async function handleCSVToolBulkUpdate(docs, tabId) {
+    const args = { docs: docs }
+
+    idfExec((args) => {
+        frappe.call({
+            method: "frappe.client.bulk_update",
+            args: {
+                docs: args.docs
+            },
+            callback: function (r) {
+                console.log(r.message);
+                frappe.show_alert(`${window.idfState.idfLogoUrl1} Imports (${args.docs.length}), Fails(${r.message.failed_docs.length})`);
+            }
+        })
+    }
+        , args, tabId);
+
+}
+
 async function saveChildTableData(payload) {
     await chrome.storage.local.set({
         "storage__childtable_data": payload
@@ -539,7 +618,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
             if (!window.idfState.pageInit) {
                 window.idfState.pageInit = true;
 
-                // paching frappe script manager to add forms scripting features
+                // hooking frappe script manager to add forms scripting features
                 let oriTrigger = frappe.ui.form.ScriptManager.prototype.trigger;
                 frappe.ui.form.ScriptManager.prototype.trigger = function (...args) {
                     setTimeout(() => {
@@ -551,7 +630,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
                         , 100);
                     return oriTrigger.call(this, ...args);
                 }
-                // paching frappe setup_view to add listview scripting features
+                // hooking frappe setup_view to add listview scripting features
                 let oriViewSetup = frappe.views.ListView.prototype.setup_view;
                 frappe.views.ListView.prototype.setup_view = function (...args) {
                     setTimeout(() => {
@@ -595,6 +674,11 @@ chrome.runtime.onMessage.addListener(async (event, sender, sendResponse) => {
         case "idf_bg_request__listview_show-insert-doc-data-dialog":
             showInsertDocDataDialog(event.payload.doctype, event.payload.bucket, tabId);
             break;
+        case "idf_bg_request__listview_show-csv-tool-dialog":
+            showCSVToolDialog(event.payload, tabId);
+            break;
+        case "idf_bg_request__csv-tool-bulk_update":
+            handleCSVToolBulkUpdate(event.payload, tabId);
         case "idf_bg_request__childtable_save":
             saveChildTableData(event.payload);
             break;

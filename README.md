@@ -19,9 +19,13 @@ A simple Browser Extension that help you work & develop in Frappe/ERPNext Framew
 - Copy/Insert any child table all/specific rows from/to any ERPNext site
 - Copy/Insert any Customize Form custom fields from/to any ERPNext site
 - Copy/Insert Doctypes data between ERPNext Sites
+- Simple CSV Files bulk import (usefull also for triggering python db apis, webhooks, server scripts etc) 
 
 
-#### Feel free to contribute in any way to improve the extension if you like it
+#### Credits
+- [Frappe Framework](https://frappeframework.com/)
+- [PapaParse](https://www.papaparse.com/)
+
 
 ## License
 

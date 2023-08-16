@@ -104,6 +104,16 @@ function ListviewSetup(tabId) {
                     }
                 });
             });
+
+            // insert docs
+            cur_list.page.add_custom_menu_item(idfGroup, "CSV Tool", () => {
+                postMessage({
+                    eventName: "idf_cs_request__listview_show-csv-tool-dialog",
+                    payload: {
+                        doctype: cur_list.doctype
+                    }
+                });
+            });
         }
     }
         , {}, tabId);
