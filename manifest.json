@@ -11,17 +11,24 @@
     "permissions": [ "scripting", "storage" ],
     "host_permissions": [ "http://*/app/*", "https://*/app/*" ],
     "content_scripts": [{
-        "js": [ "content.js", "frappe/papaparse.min.js" ],
+        "js": [ "src/content/content.js", "src/lib/frappe/papaparse.min.js" ],
         "matches": [ "http://*/app/*", "https://*/app/*" ],
         "run_at": "document_end"
     }],
     "background": {
-        "service_worker": "service-worker.js"
+        "service_worker": "src/background/service-worker.js",
+        "type": "module"
     },
     "web_accessible_resources": [
         {
-          "resources": [ "logo/logo.png" ],
-          "matches": [ "<all_urls>" ]
+          "resources": [ 
+            "logo/logo.png", 
+            "src/inject/form.js", 
+            "src/inject/listview.js", 
+            "src/inject/ui-dialogs.js", 
+            "src/shared/events.js" 
+          ],
+          "matches": [ "*://*/*" ]
         }
       ] 
 }
