@@ -10,7 +10,7 @@ A simple Browser Extension that help you work & develop in Frappe/ERPNext Framew
 
 ## Features
 
-- Support Frappe v13, v14
+- Support Frappe v13, v14, v15
 - Show & change hidden fields in any DocType
 - Force Save Non changed forms, Submittable forms & Submitted forms (re submit)
 - Highlight the hidden and custom fields in any DocType
