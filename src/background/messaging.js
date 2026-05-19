@@ -1,16 +1,5 @@
-import { 
-    saveDocData, 
-    saveChildTableData, 
-    saveCustomizedFields, 
-    getStorageData 
-} from './storage.js';
-
-import { 
-    idfExec, 
-    formTrigger, 
-    listviewSetup 
-} from './utils.js';
-
+import { saveDocData, saveChildTableData, saveCustomizedFields, getStorageData } from './storage.js';
+import { idfExec, formTrigger, listviewSetup } from './utils.js';
 import { EVENTS } from '../shared/events.js';
 
 export async function handleMessage(event, sender) {

@@ -24,14 +24,16 @@ window.formGridRender = function(doctype, docname) {
             });
         });
 
-        if (field.wrapper.firstElementChild) {
-            if (field.wrapper.firstElementChild.classList.contains("checkbox")) {
-                const label = field.wrapper.firstElementChild.querySelector("label");
-                label.appendChild(opsDiv);
-            } else if (field.wrapper.firstElementChild.classList.contains("form-group")) {
-                const label = field.wrapper.firstElementChild.querySelector(".form-group > .clearfix");
-                label.appendChild(opsDiv);
-            }
+        // Use querySelector for better compatibility (v14/v15)
+        if (field.wrapper.querySelector(".checkbox")) {
+            let label = field.wrapper.querySelector("label");
+            if (label) label.appendChild(opsDiv);
+        } else if (field.wrapper.querySelector(".form-group")) {
+            let label = field.wrapper.querySelector(".form-group > .clearfix") || field.wrapper.querySelector(".control-label");
+            if (label) label.appendChild(opsDiv);
+        } else if (field.wrapper.getAttribute("data-fieldtype") === "Table") {
+            let gridField = field.wrapper.querySelector(".grid-field");
+            if (gridField) gridField.prepend(opsDiv);
         }
     }
 };
@@ -56,7 +58,7 @@ window.formRefresh = function(doctype, name) {
     // Patch fields
     for (let i = 0; i < frm.fields.length; i++) {
         let field = frm.fields[i];
-        if (!field.wrapper.querySelector) continue;
+        if (!field.wrapper || !field.wrapper.querySelector) continue;
 
         let opsDiv = document.createElement("div");
         opsDiv.style.display = "inline-block";
@@ -72,16 +74,18 @@ window.formRefresh = function(doctype, name) {
             });
         });
 
-        if (field.wrapper.firstElementChild) {
-            if (field.wrapper.firstElementChild.classList.contains("checkbox")) {
-                field.wrapper.firstElementChild.querySelector("label").appendChild(opsDiv);
-            } else if (field.wrapper.firstElementChild.classList.contains("form-group")) {
-                field.wrapper.firstElementChild.querySelector(".form-group > .clearfix").appendChild(opsDiv);
-            } else if (field.wrapper.firstElementChild.classList.contains("control-label")) {
-                field.wrapper.firstElementChild.appendChild(opsDiv);
-            } else if (field.wrapper.firstElementChild.classList.contains("grid-field")) {
-                field.wrapper.firstElementChild.prepend(opsDiv);
-            }
+        // Use querySelector for better compatibility (v14/v15)
+        if (field.wrapper.querySelector(".checkbox")) {
+            let label = field.wrapper.querySelector("label");
+            if (label) label.appendChild(opsDiv);
+        } else if (field.wrapper.querySelector(".form-group")) {
+            let label = field.wrapper.querySelector(".form-group > .clearfix") || field.wrapper.querySelector(".control-label");
+            if (label) label.appendChild(opsDiv);
+        } else if (field.wrapper.getAttribute("data-fieldtype") === "Table") {
+            let gridField = field.wrapper.querySelector(".grid-field");
+            if (gridField) gridField.prepend(opsDiv);
+        } else if (field.wrapper.querySelector(".control-label")) {
+            field.wrapper.querySelector(".control-label").appendChild(opsDiv);
         }
 
         if (!field.df.is_custom_field) field.df.is_custom_field = "0";
